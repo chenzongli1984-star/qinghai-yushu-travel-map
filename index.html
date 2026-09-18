@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>青海玉树 · 巴塘 · 囊谦 旅行地图</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  html,body{height:100%;margin:0;font-family:"PingFang SC","Microsoft YaHei",sans-serif;background:#0b1220;color:#e8eef7;}
+  #map{position:absolute;top:0;left:0;right:0;bottom:0;background:#0b1220;}
+  #topbar{position:absolute;top:10px;left:10px;right:10px;z-index:1000;background:rgba(13,22,38,.92);
+    border:1px solid #1f3457;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    box-shadow:0 6px 24px rgba(0,0,0,.45);backdrop-filter:blur(6px);}
+  #topbar h1{font-size:16px;margin:0;font-weight:700;color:#7fc8ff;letter-spacing:.5px;white-space:nowrap;}
+  #topbar .sub{font-size:11px;color:#8aa2bd;margin-left:4px;}
+  .seg{display:flex;gap:6px;flex-wrap:wrap;}
+  .btn{font-size:12px;cursor:pointer;border:1px solid #2a4566;background:#13243d;color:#cfe0f4;
+    padding:5px 10px;border-radius:7px;transition:all .15s;user-select:none;}
+  .btn:hover{background:#1c3658;border-color:#3f6fa8;}
+  .btn.active{background:#1e5b8a;border-color:#4ea0e6;color:#fff;box-shadow:0 0 0 2px rgba(78,160,230,.25);}
+  .btn.green.active{background:#2c6e49;border-color:#57c98b;color:#fff;}
+  .btn.orange.active{background:#8a4a1e;border-color:#e68a3c;color:#fff;}
+  .btn.purple.active{background:#5a2c8a;border-color:#b07ce6;color:#fff;}
+  #sidebar{position:absolute;top:64px;left:10px;width:286px;max-height:calc(100% - 78px);overflow-y:auto;z-index:999;
+    background:rgba(13,22,38,.92);border:1px solid #1f3457;border-radius:12px;padding:10px;
+    box-shadow:0 6px 24px rgba(0,0,0,.45);backdrop-filter:blur(6px);}
+  #sidebar h2{font-size:12px;margin:8px 4px 4px;color:#7fc8ff;border-bottom:1px solid #1f3457;padding-bottom:4px;}
+  .poi{display:flex;gap:8px;align-items:center;padding:7px 6px;border-radius:8px;cursor:pointer;border:1px solid transparent;}
+  .poi:hover{background:#13243d;border-color:#2a4566;}
+  .poi img{width:44px;height:34px;object-fit:cover;border-radius:5px;flex-shrink:0;background:#1a2c46;}
+  .poi .t{font-size:12px;line-height:1.3;}
+  .poi .t b{color:#fff;font-size:12.5px;}
+  .poi .t span{color:#8aa2bd;font-size:10.5px;}
+  .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 2px rgba(255,255,255,.15);}
+  .c-air{background:#ff5959;}
+  .c-city{background:#ffd166;}
+  .c-temple{background:#c879ff;}
+  .c-nat{background:#57c98b;}
+  .c-shop{background:#19d3d3;}
+  .btn.cyan.active{background:#0f6e6e;border-color:#19d3d3;color:#fff;}
+  .tg-shop{background:#1e4a4a;color:#7fe6e6;}
+  #distbox{position:absolute;top:64px;right:10px;width:330px;max-height:calc(100% - 78px);overflow-y:auto;z-index:999;
+    background:rgba(13,22,38,.92);border:1px solid #1f3457;border-radius:12px;padding:10px;
+    box-shadow:0 6px 24px rgba(0,0,0,.45);backdrop-filter:blur(6px);}
+  #distbox h2{font-size:12px;margin:4px 0 6px;color:#ff9e66;border-bottom:1px solid #1f3457;padding-bottom:4px;}
+  .rt{display:flex;justify-content:space-between;gap:6px;font-size:10.5px;padding:5px 6px;border-radius:6px;border-bottom:1px solid #15243a;}
+  .rt:hover{background:#13243d;}
+  .rt .a{color:#cfe0f4;flex:1;}
+  .rt .a b{color:#fff;}
+  .rt .d{color:#ffd166;white-space:nowrap;font-weight:600;}
+  .rt small{color:#6f8aac;display:block;}
+  .rt .t{color:#57c98b;white-space:nowrap;}
+  .hint{font-size:10px;color:#6f8aac;padding:4px 6px;line-height:1.4;}
+  #legend{position:absolute;bottom:12px;left:10px;z-index:999;background:rgba(13,22,38,.9);
+    border:1px solid #1f3457;border-radius:10px;padding:8px 10px;font-size:10.5px;}
+  #legend .row{display:flex;align-items:center;gap:6px;margin:2px 0;}
+  #legend .ln{width:22px;height:3px;border-radius:2px;}
+  .leaflet-popup-content-wrapper{background:#0e1a2c;color:#e8eef7;border:1px solid #2a4566;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.5);}
+  .leaflet-popup-tip{background:#0e1a2c;border:1px solid #2a4566;}
+  .leaflet-popup-content{margin:11px 14px;line-height:1.45;}
+  .pp-img{width:240px;height:135px;object-fit:cover;border-radius:8px;margin:4px 0 8px;background:#1a2c46;}
+  .pp h3{margin:0 0 4px;font-size:14px;color:#7fc8ff;}
+  .pp .tag{display:inline-block;font-size:9.5px;padding:1px 6px;border-radius:5px;margin-right:4px;margin-bottom:5px;}
+  .tg-air{background:#5a1818;color:#ff9e9e;}
+  .tg-city{background:#5a4a18;color:#ffd166;}
+  .tg-temple{background:#3a1e5a;color:#c879ff;}
+  .tg-nat{background:#1e4a2e;color:#57c98b;}
+  .tg-hike{background:#3a2e1e;color:#e6c879;}
+  .tg-bike{background:#1e3a4a;color:#79c8e6;}
+  .pp p{margin:4px 0;font-size:11.5px;color:#c2d2e8;}
+  .pp .meta{font-size:10px;color:#6f8aac;border-top:1px solid #1f3457;margin-top:7px;padding-top:5px;}
+  .pp .road{font-size:10.5px;background:#13243d;border:1px solid #1f3457;border-radius:6px;padding:5px 7px;margin-top:6px;}
+  .pp .road b{color:#ffd166;}
+  .leaflet-control-attribution{display:none;}
+  .leaflet-control-zoom a{background:#0e1a2c;color:#cfe0f4;border:1px solid #2a4566;}
+  .leaflet-control-zoom a:hover{background:#1c3658;}
+  .mk{display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+  @media(max-width:760px){#sidebar,#distbox{display:none;}}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="topbar"><div><h1>青海玉树 · 巴塘 · 囊谦 旅行地图</h1><span class="sub">2026秋 · 数据综合整理(部分为估算,详见说明)</span></div><div class="seg"><span class="btn active" id="tPoi">景点</span><span class="btn cyan active" id="tShop">特产店</span><span class="btn green active" id="tRoad">驾车路线</span><span class="btn orange active" id="tHike">徒步</span><span class="btn purple active" id="tBike">骑行</span><span class="btn" id="tSat">卫星图</span><span class="btn" id="tFit">全图</span></div></div>
+<div id="sidebar"><h2>玉树结古片区</h2><div id="listYushu"></div><h2>囊谦片区</h2><div id="listNangqian"></div><h2 style="color:#7fe6e6">特产 · 非遗店铺</h2><div id="listShop"></div></div>
+<div id="distbox"><h2>主要路段 · 距离/路况/车程</h2><div id="distList"></div><div class="hint">⚠ 偏远景点(达那寺/达巴林场)到巴塘机场车程见末几行；结古↔囊谦G214觉隆尕峡隧道段2026年有半幅施工。</div></div>
+<div id="legend"><div class="row"><span class="ln" style="background:#19d3d3"></span> 特产/非遗店铺</div><div class="row"><span class="ln" style="background:#4ea0e6"></span> 驾车路线</div><div class="row"><span class="ln" style="background:#e68a3c;border-top:2px dashed #e68a3c;background:transparent;height:0;border-bottom:3px dashed #e68a3c"></span> 徒步线路</div><div class="row"><span class="ln" style="background:#b07ce6"></span> 骑行线路</div></div>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>/* 景点/路线/特产数据 + Leaflet渲染 - 见本地index.html完整内容 */
+</script>
+</body>
+</html>
