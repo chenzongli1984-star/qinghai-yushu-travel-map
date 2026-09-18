@@ -3,138 +3,177 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>青海玉树 · 巴塘 · 囊谦 旅行地图</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<title>青海玉树 · 巴塘 · 囊谦 旅行示意图</title>
 <style>
-  html,body{height:100%;margin:0;font-family:"PingFang SC","Microsoft YaHei",sans-serif;background:#0b1220;color:#e8eef7;}
-  #map{position:absolute;top:0;left:0;right:0;bottom:0;background:#0b1220;}
+  html,body{height:100%;margin:0;font-family:"PingFang SC","Microsoft YaHei",sans-serif;background:#0b1220;color:#e8eef7;overflow:hidden;}
   /* 顶栏 */
-  #topbar{position:absolute;top:10px;left:10px;right:10px;z-index:1000;background:rgba(13,22,38,.92);
-    border:1px solid #1f3457;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
-    box-shadow:0 6px 24px rgba(0,0,0,.45);backdrop-filter:blur(6px);}
-  #topbar h1{font-size:16px;margin:0;font-weight:700;color:#7fc8ff;letter-spacing:.5px;white-space:nowrap;}
-  #topbar .sub{font-size:11px;color:#8aa2bd;margin-left:4px;}
-  .seg{display:flex;gap:6px;flex-wrap:wrap;}
-  .btn{font-size:12px;cursor:pointer;border:1px solid #2a4566;background:#13243d;color:#cfe0f4;
-    padding:5px 10px;border-radius:7px;transition:all .15s;user-select:none;}
+  #topbar{position:absolute;top:0;left:0;right:0;height:62px;z-index:1000;background:rgba(13,22,38,.95);
+    border-bottom:1px solid #1f3457;padding:8px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    box-shadow:0 4px 16px rgba(0,0,0,.4);}
+  #topbar h1{font-size:15px;margin:0;font-weight:700;color:#7fc8ff;letter-spacing:.5px;white-space:nowrap;}
+  #topbar .sub{font-size:10.5px;color:#8aa2bd;margin-left:6px;}
+  .seg{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+  .seg .lbl{font-size:11px;color:#8aa2bd;margin-right:3px;}
+  .btn{font-size:11.5px;cursor:pointer;border:1px solid #2a4566;background:#13243d;color:#cfe0f4;
+    padding:4px 9px;border-radius:6px;transition:all .15s;user-select:none;}
   .btn:hover{background:#1c3658;border-color:#3f6fa8;}
-  .btn.active{background:#1e5b8a;border-color:#4ea0e6;color:#fff;box-shadow:0 0 0 2px rgba(78,160,230,.25);}
-  .btn.green.active{background:#2c6e49;border-color:#57c98b;color:#fff;}
-  .btn.orange.active{background:#8a4a1e;border-color:#e68a3c;color:#fff;}
-  .btn.purple.active{background:#5a2c8a;border-color:#b07ce6;color:#fff;}
-  /* 侧栏 */
-  #sidebar{position:absolute;top:64px;left:10px;width:286px;max-height:calc(100% - 78px);overflow-y:auto;z-index:999;
-    background:rgba(13,22,38,.92);border:1px solid #1f3457;border-radius:12px;padding:10px;
-    box-shadow:0 6px 24px rgba(0,0,0,.45);backdrop-filter:blur(6px);}
+  .btn.active{background:#1e5b8a;border-color:#4ea0e6;color:#fff;}
+  .btn.day{font-weight:700;padding:4px 11px;}
+  /* 主体三栏 */
+  #main{position:absolute;top:62px;left:0;right:0;bottom:0;display:flex;}
+  /* 左栏 景点列表 */
+  #sidebar{width:240px;flex-shrink:0;overflow-y:auto;background:rgba(13,22,38,.92);
+    border-right:1px solid #1f3457;padding:10px;}
   #sidebar h2{font-size:12px;margin:8px 4px 4px;color:#7fc8ff;border-bottom:1px solid #1f3457;padding-bottom:4px;}
-  .poi{display:flex;gap:8px;align-items:center;padding:7px 6px;border-radius:8px;cursor:pointer;border:1px solid transparent;}
+  .poi{display:flex;gap:7px;align-items:center;padding:5px 6px;border-radius:6px;cursor:pointer;border:1px solid transparent;}
   .poi:hover{background:#13243d;border-color:#2a4566;}
-  .poi img{width:44px;height:34px;object-fit:cover;border-radius:5px;flex-shrink:0;background:#1a2c46;}
-  .poi .t{font-size:12px;line-height:1.3;}
-  .poi .t b{color:#fff;font-size:12.5px;}
-  .poi .t span{color:#8aa2bd;font-size:10.5px;}
-  .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 2px rgba(255,255,255,.15);}
+  .poi img{width:38px;height:28px;object-fit:cover;border-radius:4px;flex-shrink:0;background:#1a2c46;}
+  .poi .t{font-size:11px;line-height:1.3;}
+  .poi .t b{color:#fff;font-size:11.5px;}
+  .poi .t span{color:#8aa2bd;font-size:9.5px;}
+  .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
   .c-air{background:#ff5959;}
   .c-city{background:#ffd166;}
   .c-temple{background:#c879ff;}
   .c-nat{background:#57c98b;}
   .c-shop{background:#19d3d3;}
-  .btn.cyan.active{background:#0f6e6e;border-color:#19d3d3;color:#fff;}
+  /* 中间 SVG 示意图 */
+  #mapWrap{flex:1;overflow:auto;position:relative;background:radial-gradient(ellipse at 50% 30%, #15233e 0%, #0b1220 70%);display:flex;align-items:center;justify-content:center;min-width:0;}
+  #schematic{display:block;margin:0 auto;height:calc(100vh - 80px);max-width:100%;max-height:100%;}
+  /* 右栏 详情 */
+  #detailPanel{width:340px;flex-shrink:0;overflow-y:auto;background:rgba(13,22,38,.92);
+    border-left:1px solid #1f3457;padding:12px;}
+  #detailPanel h2{font-size:12px;color:#ff9e66;margin:6px 0 6px;border-bottom:1px solid #1f3457;padding-bottom:4px;}
+  .detail-img{width:100%;max-height:170px;object-fit:cover;border-radius:8px;margin:6px 0;background:#1a2c46;}
+  .detail-title{font-size:14px;font-weight:700;color:#7fc8ff;margin:6px 0 4px;line-height:1.3;}
+  .tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:5px;margin:2px 4px 2px 0;}
+  .tg-air{background:#5a1818;color:#ff9e9e;}
+  .tg-city{background:#5a4a18;color:#ffd166;}
+  .tg-temple{background:#3a1e5a;color:#c879ff;}
+  .tg-nat{background:#1e4a2e;color:#57c98b;}
   .tg-shop{background:#1e4a4a;color:#7fe6e6;}
-  /* 距离浮窗 */
-  #distbox{position:absolute;top:64px;right:10px;width:330px;max-height:calc(100% - 78px);overflow-y:auto;z-index:999;
-    background:rgba(13,22,38,.92);border:1px solid #1f3457;border-radius:12px;padding:10px;
-    box-shadow:0 6px 24px rgba(0,0,0,.45);backdrop-filter:blur(6px);}
-  #distbox h2{font-size:12px;margin:4px 0 6px;color:#ff9e66;border-bottom:1px solid #1f3457;padding-bottom:4px;}
-  .rt{display:flex;justify-content:space-between;gap:6px;font-size:10.5px;padding:5px 6px;border-radius:6px;border-bottom:1px solid #15243a;}
+  .tg-hike{background:#3a2e1e;color:#e6c879;}
+  .desc{font-size:11.5px;color:#c2d2e8;margin:6px 0;line-height:1.55;}
+  .road{font-size:11px;background:#13243d;border:1px solid #1f3457;border-radius:6px;padding:6px 8px;margin-top:6px;color:#cfe0f4;}
+  .road b{color:#ffd166;}
+  .meta{font-size:10.5px;color:#6f8aac;border-top:1px solid #1f3457;margin-top:7px;padding-top:5px;}
+  .rt{display:flex;justify-content:space-between;gap:6px;font-size:10px;padding:4px 5px;border-radius:5px;border-bottom:1px solid #15243a;}
   .rt:hover{background:#13243d;}
   .rt .a{color:#cfe0f4;flex:1;}
   .rt .a b{color:#fff;}
   .rt .d{color:#ffd166;white-space:nowrap;font-weight:600;}
   .rt small{color:#6f8aac;display:block;}
   .rt .t{color:#57c98b;white-space:nowrap;}
-  .hint{font-size:10px;color:#6f8aac;padding:4px 6px;line-height:1.4;}
-  /* 图例 */
-  #legend{position:absolute;bottom:12px;left:10px;z-index:999;background:rgba(13,22,38,.9);
-    border:1px solid #1f3457;border-radius:10px;padding:8px 10px;font-size:10.5px;}
+  .hint{font-size:9.5px;color:#6f8aac;padding:3px 5px;line-height:1.4;margin-top:6px;}
+  .empty{color:#6f8aac;font-size:11px;text-align:center;padding:20px 8px;line-height:1.6;}
+  /* SVG 元素样式 */
+  .poi-marker{transition:all .15s;}
+  .poi-marker:hover{stroke-width:3;filter:drop-shadow(0 0 6px currentColor);}
+  .poi-label{pointer-events:none;font-weight:600;text-shadow:0 1px 3px #000,0 0 2px #000;}
+  .day-stop{transition:all .15s;}
+  .day-stop:hover{stroke-width:3;filter:drop-shadow(0 0 8px #fff);}
+  .road-line{transition:opacity .2s;}
+  .road-line:hover{opacity:1 !important;stroke:#ffd166 !important;}
+  /* 图例(浮在地图右上) */
+  #legend{position:absolute;top:8px;right:8px;z-index:50;background:rgba(13,22,38,.92);
+    border:1px solid #1f3457;border-radius:8px;padding:7px 10px;font-size:10px;
+    box-shadow:0 4px 12px rgba(0,0,0,.4);}
   #legend .row{display:flex;align-items:center;gap:6px;margin:2px 0;}
-  #legend .ln{width:22px;height:3px;border-radius:2px;}
-  /* leaflet popup 美化 */
-  .leaflet-popup-content-wrapper{background:#0e1a2c;color:#e8eef7;border:1px solid #2a4566;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.5);}
-  .leaflet-popup-tip{background:#0e1a2c;border:1px solid #2a4566;}
-  .leaflet-popup-content{margin:11px 14px;line-height:1.45;}
-  .pp-img{width:240px;height:135px;object-fit:cover;border-radius:8px;margin:4px 0 8px;background:#1a2c46;}
-  .pp h3{margin:0 0 4px;font-size:14px;color:#7fc8ff;}
-  .pp .tag{display:inline-block;font-size:9.5px;padding:1px 6px;border-radius:5px;margin-right:4px;margin-bottom:5px;}
-  .tg-air{background:#5a1818;color:#ff9e9e;}
-  .tg-city{background:#5a4a18;color:#ffd166;}
-  .tg-temple{background:#3a1e5a;color:#c879ff;}
-  .tg-nat{background:#1e4a2e;color:#57c98b;}
-  .tg-hike{background:#3a2e1e;color:#e6c879;}
-  .tg-bike{background:#1e3a4a;color:#79c8e6;}
-  .pp p{margin:4px 0;font-size:11.5px;color:#c2d2e8;}
-  .pp .meta{font-size:10px;color:#6f8aac;border-top:1px solid #1f3457;margin-top:7px;padding-top:5px;}
-  .pp .road{font-size:10.5px;background:#13243d;border:1px solid #1f3457;border-radius:6px;padding:5px 7px;margin-top:6px;}
-  .pp .road b{color:#ffd166;}
-  .leaflet-control-attribution{display:none;}
-  .leaflet-control-zoom a{background:#0e1a2c;color:#cfe0f4;border:1px solid #2a4566;}
-  .leaflet-control-zoom a:hover{background:#1c3658;}
-  /* 标记 */
-  .mk{display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
-  @media(max-width:760px){#sidebar,#distbox{display:none;}}
+  #legend .ln{width:18px;height:3px;border-radius:2px;}
+  @media(max-width:1100px){#sidebar{display:none;}#schematic{min-width:500px;}}
+  @media(max-width:760px){#detailPanel{display:none;}#schematic{min-width:400px;}}
 </style>
 </head>
 <body>
-<div id="map"></div>
 
 <div id="topbar">
-  <div><h1>青海玉树 · 巴塘 · 囊谦 旅行地图</h1><span class="sub">2026秋 · 数据综合整理(部分为估算,详见说明)</span></div>
+  <div><h1>青海玉树 · 巴塘 · 囊谦 旅行示意图</h1><span class="sub">2026秋 · 数据综合整理(部分估算)</span></div>
   <div class="seg">
-    <span class="btn active" id="tPoi">景点</span>
-    <span class="btn cyan active" id="tShop">特产店</span>
-    <span class="btn green active" id="tRoad">驾车路线</span>
-    <span class="btn orange active" id="tHike">徒步</span>
-    <span class="btn purple active" id="tBike">骑行</span>
-    <span class="btn active" style="background:#4cd3ff;color:#0b1220;border-color:#4cd3ff" id="tDay1">D1</span>
-    <span class="btn active" style="background:#ff2e63;color:#fff;border-color:#ff2e63" id="tDay2">D2</span>
-    <span class="btn active" style="background:#ffb347;color:#0b1220;border-color:#ffb347" id="tDay3">D3</span>
-    <span class="btn active" style="background:#a0e548;color:#0b1220;border-color:#a0e548" id="tDay4">D4</span>
-    <span class="btn" id="tSat">卫星图</span>
-    <span class="btn" id="tFit">全图</span>
+    <span class="lbl">图层:</span>
+    <span class="btn active" data-layer="poi">景点</span>
+    <span class="btn cyan active" data-layer="shop" style="background:#0f6e6e;border-color:#19d3d3;color:#fff">特产店</span>
+    <span class="btn green active" data-layer="road" style="background:#2c6e49;border-color:#57c98b;color:#fff">驾车</span>
+    <span class="btn orange active" data-layer="hike" style="background:#8a4a1e;border-color:#e68a3c;color:#fff">徒步</span>
+    <span class="btn purple active" data-layer="bike" style="background:#5a2c8a;border-color:#b07ce6;color:#fff">骑行</span>
+  </div>
+  <div class="seg">
+    <span class="lbl">行程:</span>
+    <span class="btn day active" data-day="1" style="background:#1e5b8a;border-color:#4cd3ff;color:#fff">D1 落地</span>
+    <span class="btn day active" data-day="2" style="background:#1e5b8a;border-color:#ff2e63;color:#fff">D2 环线</span>
+    <span class="btn day active" data-day="3" style="background:#1e5b8a;border-color:#ffb347;color:#fff">D3 →囊谦</span>
+    <span class="btn day active" data-day="4" style="background:#1e5b8a;border-color:#a0e548;color:#fff">D4 送机</span>
+    <span class="btn" data-layer="all" id="tAll">全显/全隐</span>
   </div>
 </div>
 
-<div id="sidebar">
-  <h2>玉树结古片区</h2>
-  <div id="listYushu"></div>
-  <h2>囊谦片区</h2>
-  <div id="listNangqian"></div>
-  <h2 style="color:#7fe6e6">特产 · 非遗店铺</h2>
-  <div id="listShop"></div>
+<div id="main">
+  <aside id="sidebar">
+    <h2>玉树结古片区</h2>
+    <div id="listYushu"></div>
+    <h2>囊谦片区</h2>
+    <div id="listNangqian"></div>
+    <h2 style="color:#7fe6e6">特产 · 非遗店铺</h2>
+    <div id="listShop"></div>
+  </aside>
+
+  <div id="mapWrap">
+    <div id="legend">
+      <div class="row"><span class="ln" style="background:#4cd3ff"></span> D1 落地日</div>
+      <div class="row"><span class="ln" style="background:#ff2e63"></span> D2 结古环线</div>
+      <div class="row"><span class="ln" style="background:#ffb347"></span> D3 玉树→囊谦</div>
+      <div class="row"><span class="ln" style="background:#a0e548"></span> D4 囊谦→送机</div>
+      <div class="row"><span class="ln" style="background:#5a7a9a"></span> 驾车路线</div>
+      <div class="row"><span class="ln" style="background:#e68a3c;border-top:2px dashed #e68a3c;background:transparent;height:0;border-bottom:3px dashed #e68a3c"></span> 徒步</div>
+      <div class="row"><span class="ln" style="background:#b07ce6"></span> 骑行</div>
+      <div class="row"><span class="ln" style="background:#19d3d3"></span> 特产店</div>
+    </div>
+    <svg id="schematic" viewBox="0 0 1000 1400" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1a2c46"/>
+          <stop offset="60%" stop-color="#0e1a2c"/>
+          <stop offset="100%" stop-color="#0b1220"/>
+        </linearGradient>
+        <pattern id="hatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="6" stroke="#1f3457" stroke-width="0.6" opacity="0.5"/>
+        </pattern>
+      </defs>
+      <rect x="0" y="0" width="1000" height="1400" fill="url(#bgGrad)"/>
+      <g id="gTerrain" opacity="0.75"></g>
+      <g id="gRivers"></g>
+      <g id="gRoads"></g>
+      <g id="gHikes"></g>
+      <g id="gBikes"></g>
+      <g id="gDays"></g>
+      <g id="gShops"></g>
+      <g id="gPois"></g>
+      <g id="gCompass">
+        <circle cx="930" cy="80" r="22" fill="rgba(13,22,38,.8)" stroke="#3f6fa8" stroke-width="1.2"/>
+        <polygon points="930,62 925,84 930,78 935,84" fill="#ff5959"/>
+        <polygon points="930,98 925,76 930,82 935,76" fill="#cfe0f4" opacity="0.6"/>
+        <text x="930" y="58" text-anchor="middle" font-size="10" fill="#7fc8ff" font-weight="bold">N</text>
+        <text x="930" y="118" text-anchor="middle" font-size="8" fill="#6f8aac">S</text>
+        <text x="900" y="84" text-anchor="middle" font-size="8" fill="#6f8aac">W</text>
+        <text x="960" y="84" text-anchor="middle" font-size="8" fill="#6f8aac">E</text>
+      </g>
+      <text x="500" y="40" text-anchor="middle" font-size="20" fill="#7fc8ff" font-weight="bold" opacity="0.8">青海玉树·巴塘·囊谦 旅行示意图</text>
+      <text x="500" y="60" text-anchor="middle" font-size="10" fill="#8aa2bd">比例:示意·非地理精确 · 数据综合整理</text>
+    </svg>
+  </div>
+
+  <aside id="detailPanel">
+    <div id="detailContent">
+      <div class="empty">点击地图上的景点标记<br>查看详细介绍、图片、路况<br><br>也可点击左栏景点列表<br>或中部 📅 标记查看每日行程</div>
+    </div>
+    <h2>主要路段 · 距离/路况/车程</h2>
+    <div id="distList"></div>
+    <div class="hint">⚠ 偏远景点(达那寺/达巴林场)到巴塘机场车程见末几行；结古↔囊谦G214觉隆尕峡隧道段2026年有半幅施工。</div>
+  </aside>
 </div>
 
-<div id="distbox">
-  <h2>主要路段 · 距离/路况/车程</h2>
-  <div id="distList"></div>
-  <div class="hint">⚠ 偏远景点(达那寺/达巴林场)到巴塘机场车程见末几行；结古↔囊谦G214觉隆尕峡隧道段2026年有半幅施工。</div>
-</div>
-
-<div id="legend">
-  <div class="row"><span class="ln" style="background:#4cd3ff"></span> D1 落地日·结古人文</div>
-  <div class="row"><span class="ln" style="background:#ff2e63"></span> D2 结古环线(优化)</div>
-  <div class="row"><span class="ln" style="background:#ffb347"></span> D3 玉树→囊谦</div>
-  <div class="row"><span class="ln" style="background:#a0e548"></span> D4 囊谦深度·送机</div>
-  <div class="row"><span class="ln" style="background:#19d3d3"></span> 特产/非遗店铺</div>
-  <div class="row"><span class="ln" style="background:#4ea0e6"></span> 驾车路线</div>
-  <div class="row"><span class="ln" style="background:#e68a3c;border-top:2px dashed #e68a3c;background:transparent;height:0;border-bottom:3px dashed #e68a3c"></span> 徒步线路</div>
-  <div class="row"><span class="ln" style="background:#b07ce6"></span> 骑行线路</div>
-</div>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 // ============ 景点数据 ============
-// 坐标来源：结古寺(97°00'57"E,33°00'31""N)、隆宝滩(33°09'-33°17'N,96°24'-96°37'E)、囊谦县(95°21'-97°07E,31°32'-32°43'N)、巴塘机场(北距玉树市中心18km/214国道南侧)等来自搜索结果；其余寺庙/景点按所在乡/村名相对定位估算，仅供地图参考。
+// 坐标来源：结古寺(97°00'57"E,33°00'31"N)、隆宝滩(33°09'-33°17'N,96°24'-96°37'E)、囊谦县(95°21'-97°07'E,31°32'-32°43'N)、巴塘机场(北距玉树市中心18km/214国道南侧)等来自搜索结果；其余寺庙/景点按所在乡/村名相对定位估算，仅供地图参考。
 const POIs = [
   {id:'yus', name:'玉树巴塘机场 (YUS)', cat:'air', region:'yushu', lat:32.847, lng:97.078, alt:'3950m',
    img:'images/batang_grassland.jpg',
@@ -181,7 +220,6 @@ const POIs = [
    desc:'国家级自然保护区(1986年)，位于玉树县隆宝镇(结隆乡)，距结古镇西北约80km。平均海拔4200m，面积1万公顷。黑颈鹤(国家一级保护)主要繁殖地，4月底迁徙来此，9月底南飞。每年5-8月可观鹤。',
    road:'结古镇西北约80km，县乡道，车程约2小时；海拔高注意高反。',
    coord:'33°09′–33°17′N, 96°24′–96°37′E'},
-
   {id:'nangqiantown', name:'囊谦县城(香达镇)', cat:'city', region:'nangqian', lat:32.230, lng:96.480, alt:'约3640m',
    img:'images/naijama_mountain.jpg',
    desc:'囊谦县府驻地，扎曲河畔。12世纪起统治玉树600年的"囊谦王"部落中心，素有"禅定之乡"美称。寺院多、教派全、宗教氛围浓厚。东经95°21′–97°07′，北纬31°32′–32°43′。',
@@ -220,7 +258,6 @@ const POIs = [
 ];
 
 // ============ 特产/非遗店铺 ============
-// 店铺地址来自工商注册信息；坐标按所在街道/镇相对定位估算，仅供地图参考。
 const SHOPS = [
   {id:'sh1', name:'玉树雪域弥底迦纳唐卡公司', cat:'shop', region:'yushu', lat:33.008, lng:97.014, alt:'3700m',
    addr:'结古镇普措达赞巷嘎结古老市场',
@@ -241,33 +278,27 @@ const SHOPS = [
   {id:'sh5', name:'囊谦藏黑陶文化研究开发公司', cat:'shop', region:'nangqian', lat:32.232, lng:96.478, alt:'3640m',
    addr:'囊谦县香达镇香曲北路格荣滩',
    desc:'国家级非遗"藏族黑陶烧制技艺"保护单位(项目编号Ⅷ-98)，法人白玛群加(国家级非遗代表性传承人)，2014年成立。主营黑陶、唐卡、嘛呢石刻、金银雕、藏饰品；设职业技能培训。黑陶采用当地红胶土，经29道工序封罐熏烟渗碳烧制，"黑如碳，硬如瓷"，相传文成公主传入。',
-   goods:'囊谦黑陶(国家级非遗)、唐卡、嘛呢石刻、金银雕、藏饰品',
-   coord:'囊谦县香达镇香曲北路格荣滩(估算)'},
+   goods:'囊谦黑陶(国家级非遗)、唐卡、嘛呢石刻、金银雕、藏饰品'},
   {id:'sh6', name:'囊谦扶贫产业园', cat:'shop', region:'nangqian', lat:32.235, lng:96.490, alt:'3640m',
    addr:'囊谦县香达镇县城边缘(扶贫产业园)',
    desc:'2021年建设，入驻企业18家，从业223人。涵盖牦牛绒加工、牦牛乳加工、青稞产品加工、藏香、藏酒、藏黑陶、囊谦红盐、唐卡等本地优势产品，错位发展。2025年发放工资340余万元。是囊谦"三黑一红"(黑青稞/黑啤酒/黑陶+红盐)核心展销平台。',
-   goods:'红盐、黑陶、黑青稞、黑啤酒、藏香、藏酒、牦牛绒制品、唐卡',
-   coord:'囊谦县城东产业园(估算)'},
+   goods:'红盐、黑陶、黑青稞、黑啤酒、藏香、藏酒、牦牛绒制品、唐卡'},
   {id:'sh7', name:'囊谦噶玛尕尔直唐卡公司', cat:'shop', region:'nangqian', lat:32.228, lng:96.476, alt:'3640m',
    addr:'囊谦县香达镇扎曲路',
    desc:'2015年成立，法人扎巴生格，注册资本85万。主营唐卡、唐巴装饰品、手工艺品、佛像批发。囊谦唐卡代表性传承企业。',
-   goods:'唐卡、唐巴装饰、手工艺品、佛像',
-   coord:'囊谦县香达镇扎曲路(估算)'},
+   goods:'唐卡、唐巴装饰、手工艺品、佛像'},
   {id:'sh8', name:'囊谦乃嘉玛唐卡文化艺术公司', cat:'shop', region:'nangqian', lat:32.225, lng:96.474, alt:'3640m',
    addr:'囊谦县香曲南路',
    desc:'2014年成立，法人桑买，注册资本300万。主营唐卡制作零售、文化艺术培训。已注册"乃嘉尔"商标。与乃嘉玛神山同名，地域文化代表。',
-   goods:'唐卡、文化艺术培训',
-   coord:'囊谦县香曲南路(估算)'},
+   goods:'唐卡、文化艺术培训'},
   {id:'sh9', name:'囊谦光辉唐卡店', cat:'shop', region:'nangqian', lat:32.230, lng:96.470, alt:'3640m',
    addr:'囊谦县香达镇香达西街步行街66号',
    desc:'2021年成立，经营者贺光秀。主营工艺美术品及礼仪用品制造。位于香达西街步行街，游客易到达。',
-   goods:'唐卡、工艺美术品',
-   coord:'囊谦香达西街步行街(估算)'},
+   goods:'唐卡、工艺美术品'},
   {id:'sh10', name:'玉树巴塘机场黑陶分公司', cat:'shop', region:'yushu', lat:32.849, lng:97.080, alt:'3950m',
    addr:'玉树市(囊谦藏黑陶公司巴塘机场分公司)',
    desc:'囊谦藏黑陶文化研究开发有限公司巴唐机场分公司，2016年成立，负责人阿但。位于机场区域，便于游客离港前选购。',
-   goods:'黑陶、藏饰品(机场便利购买)',
-   coord:'巴塘机场附近(估算)'},
+   goods:'黑陶、藏饰品(机场便利购买)'},
 ];
 
 // ============ 驾车路线(距离/路况/时间) ============
@@ -313,8 +344,6 @@ const BIKES = [
 ];
 
 // ============ 4日行程动线 ============
-// 通用格式: {name,color,stops:[[序号,poiId,lat,lng,停留说明]], info, food, stay}
-// D2 原路线 结古→文成→勒巴→禅古→通天 在勒巴→禅古段折返，优化为顺时针环线不折返。
 const DAY1 = {
   name:'D1 落地日 · 结古人文初探',
   color:'#4cd3ff',
@@ -374,124 +403,275 @@ const DAY4 = {
 };
 const DAYS = [DAY1, DAY2, DAY3, DAY4];
 
-// ============ 渲染 ============
-const map = L.map('map',{zoomControl:true, attributionControl:false}).setView([32.4,96.9],8);
-let curBase = 'sat';
-const satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18, maxNativeZoom:17, subdomains:['server','services']});
-const refLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:18, maxNativeZoom:17, opacity:0.9});
-satLayer.addTo(map); refLayer.addTo(map);
+// ============ 投影 & 渲染 ============
+const MIN_LNG=96.20, MAX_LNG=97.35, MIN_LAT=31.65, MAX_LAT=33.35;
+const SVG_W=1000, SVG_H=1400, PAD_X=70, PAD_Y=80;
+function projX(lng){ return PAD_X + (lng-MIN_LNG)/(MAX_LNG-MIN_LNG)*(SVG_W-2*PAD_X); }
+function projY(lat){ return PAD_Y + (MAX_LAT-lat)/(MAX_LAT-MIN_LAT)*(SVG_H-2*PAD_Y); }
 
 const catColor = {air:'#ff5959', city:'#ffd166', temple:'#c879ff', nat:'#57c98b', shop:'#19d3d3'};
-const catTag = {air:'tg-air 机场', city:'tg-city 城镇', temple:'tg-temple 寺庙/人文', nat:'tg-nat 自然', shop:'tg-shop 特产/非遗'};
 const catIcon = {air:'✈', city:'▣', temple:'☪', nat:'❀', shop:'kshop'};
-// shop 用方形图标(区别于景点的圆头水滴)
-function makeShopIcon(){
-  return L.divIcon({className:'', html:'<div class="mk" style="width:24px;height:24px;border-radius:5px;background:#19d3d3;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.5);font-size:13px">kshop</div>', iconSize:[24,24], iconAnchor:[12,12], popupAnchor:[0,-12]});
-}
-
-function makeIcon(cat){
-  return L.divIcon({className:'', html:'<div class="mk" style="width:26px;height:26px;border-radius:50% 50% 50% 0;background:'+catColor[cat]+';border:2px solid #fff;transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,.5)"><span style="transform:rotate(45deg);color:#0b1220">'+catIcon[cat]+'</span></div>', iconSize:[26,26], iconAnchor:[13,26], popupAnchor:[0,-26]});
-}
-function makeIconSpecial(emoji,color){
-  return L.divIcon({className:'', html:'<div class="mk" style="width:30px;height:30px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5)">'+emoji+'</div>', iconSize:[30,30], iconAnchor:[15,15], popupAnchor:[0,-15]});
-}
-
-const poiLayer = L.layerGroup().addTo(map);
-const shopLayer = L.layerGroup().addTo(map);
-const roadLayer = L.layerGroup().addTo(map);
-const hikeLayer = L.layerGroup().addTo(map);
-const bikeLayer = L.layerGroup().addTo(map);
-const dayLayers = {}; // D1~D4 各自一个图层
-DAYS.forEach((d,i)=>{ dayLayers['D'+(i+1)] = L.layerGroup().addTo(map); });
+const catTag = {air:'机场', city:'城镇', temple:'寺庙/人文', nat:'自然', shop:'特产/非遗'};
 
 const poiById = {};
-POIs.forEach(p=>{
-  const m = L.marker([p.lat,p.lng],{icon:makeIcon(p.cat)}).addTo(poiLayer);
-  const tagCls = catTag[p.cat].split(' ')[0];
-  const tagName = catTag[p.cat].split(' ').slice(1).join(' ');
-  m.bindPopup('<div class="pp"><img class="pp-img" src="'+p.img+'"><h3>'+p.name+'</h3><span class="tag '+tagCls+'">'+tagName+'</span><span class="tag tg-hike">海拔 '+p.alt+'</span><p>'+p.desc+'</p><div class="road">🚗 '+p.road+'</div><div class="meta">📍 '+(p.coord||('约 '+p.lng.toFixed(3)+'°E, '+p.lat.toFixed(3)+'°N  (估算)'))+'</div></div>',{minWidth:270, maxWidth:290});
-  poiById[p.id] = {marker:m, data:p};
-});
+POIs.forEach(p=>{ poiById[p.id] = {data:p}; });
 
-// 特产/非遗店铺
-const shopById = {};
-SHOPS.forEach(s=>{
-  const m = L.marker([s.lat,s.lng],{icon:makeShopIcon()}).addTo(shopLayer);
-  m.bindPopup('<div class="pp"><h3>kshop '+s.name+'</h3><span class="tag tg-shop">特产/非遗</span><span class="tag tg-hike">海拔 '+s.alt+'</span><p>'+s.desc+'</p><div class="road">kshop 主营: '+s.goods+'</div><div class="meta">kshop 地址: '+s.addr+'<br>📍 '+(s.coord||('约 '+s.lng.toFixed(3)+'°E, '+s.lat.toFixed(3)+'°N  (估算)'))+'</div></div>',{minWidth:270, maxWidth:290});
-  shopById[s.id] = {marker:m, data:s};
-});
+// 地形背景 - 山脉示意
+function renderTerrain(){
+  const g = document.getElementById('gTerrain');
+  let html = '';
+  // 北部山脉(隆宝滩-结古-通天河一带)
+  html += '<path d="M 80 180 Q 200 130 320 170 T 600 150 T 920 170 L 920 220 L 80 220 Z" fill="#1e3457" opacity="0.85" stroke="#3a5274" stroke-width="1"/>';
+  // 中部山脉(结古-囊谦之间)
+  html += '<path d="M 60 600 Q 200 560 360 590 T 700 580 T 940 600 L 940 650 L 60 650 Z" fill="#1e3457" opacity="0.8" stroke="#3a5274" stroke-width="1"/>';
+  // 南部山脉(囊谦-达那寺)
+  html += '<path d="M 60 1080 Q 200 1040 360 1070 T 700 1060 T 940 1080 L 940 1130 L 60 1130 Z" fill="#1e3457" opacity="0.8" stroke="#3a5274" stroke-width="1"/>';
+  // 雪峰符号
+  const peaks = [[150,170],[420,160],[680,170],[180,590],[480,585],[780,590],[180,1070],[480,1065]];
+  peaks.forEach(([x,y])=>{
+    html += `<polygon points="${x-10},${y+10} ${x},${y-14} ${x+10},${y+10}" fill="#3a5274" opacity="0.9"/>`;
+    html += `<polygon points="${x-4},${y-3} ${x},${y-14} ${x+4},${y-3}" fill="#cfe0f4" opacity="0.85"/>`;
+  });
+  g.innerHTML = html;
+}
 
-// 路线
-ROADS.forEach(r=>{
-  const A=poiById[r.a].data, B=poiById[r.b].data;
-  const color = r.remote ? '#ff7a7a' : '#4ea0e6';
-  const line = L.polyline([[A.lat,A.lng],[B.lat,B.lng]],{color:color, weight: r.key?4:2.5, opacity:0.85, dashArray: r.remote? '6 5': null}).addTo(roadLayer);
-  line.bindTooltip('<b>'+A.name+' ↔ '+B.name+'</b><br>距离:'+r.dist+'｜路况:'+r.road+'<br>车程:'+r.time+(r.remote?'<br>⚠ 偏远景点到机场':''),{sticky:true, direction:'top', className:'ttip'});
-});
+// 河流
+function renderRivers(){
+  const g = document.getElementById('gRivers');
+  let html = '';
+  // 通天河(东北部)
+  html += `<path d="M 700 100 Q 760 200 820 280 T 920 380" fill="none" stroke="#5aa8df" stroke-width="4" opacity="0.95"/>`;
+  html += `<text x="870" y="240" font-size="12" fill="#7fc4ff" font-style="italic" opacity="1" font-weight="600">通天河</text>`;
+  // 扎曲河/澜沧江(穿过囊谦南下)
+  html += `<path d="M 220 760 Q 240 850 260 920 T 280 1080 T 250 1280" fill="none" stroke="#5aa8df" stroke-width="4" opacity="0.95"/>`;
+  html += `<text x="195" y="980" font-size="12" fill="#7fc4ff" font-style="italic" opacity="1" font-weight="600" transform="rotate(80 195 980)">扎曲河·澜沧江</text>`;
+  // 吉曲河(达那寺一带)
+  html += `<path d="M 200 1180 Q 230 1230 220 1300 T 240 1380" fill="none" stroke="#5aa8df" stroke-width="3" opacity="0.9"/>`;
+  html += `<text x="180" y="1330" font-size="11" fill="#7fc4ff" font-style="italic" opacity="1" font-weight="600">吉曲河</text>`;
+  g.innerHTML = html;
+}
+
+// 驾车路线
+function renderRoads(){
+  const g = document.getElementById('gRoads');
+  let html = '';
+  ROADS.forEach(r=>{
+    const A=poiById[r.a].data, B=poiById[r.b].data;
+    const x1=projX(A.lng), y1=projY(A.lat), x2=projX(B.lng), y2=projY(B.lat);
+    const mx=(x1+x2)/2, my=(y1+y2)/2;
+    const color = r.remote ? '#ff7a7a' : '#5a7a9a';
+    const w = r.key ? 2.2 : 1.4;
+    const dash = r.remote ? '6 4' : '';
+    html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${color}" stroke-width="${w}" opacity="0.75" stroke-dasharray="${dash}" class="road-line"/>`;
+    // 中点距离/时间标签
+    if(r.key){
+      html += `<g class="road-label" opacity="0.95">
+        <rect x="${(mx-30).toFixed(1)}" y="${(my-12).toFixed(1)}" width="60" height="22" rx="4" fill="rgba(13,22,38,.85)" stroke="#1f3457" stroke-width="0.5"/>
+        <text x="${mx.toFixed(1)}" y="${(my-3).toFixed(1)}" text-anchor="middle" font-size="9" fill="#ffd166" font-weight="600">${r.dist} · ${r.time}</text>
+        <text x="${mx.toFixed(1)}" y="${(my+5).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="#8aa2bd">${r.road.length>10?r.road.slice(0,9)+'…':r.road}</text>
+      </g>`;
+    }
+  });
+  g.innerHTML = html;
+}
 
 // 徒步
-HIKES.forEach(h=>{
-  const line = L.polyline(h.pts,{color:'#e68a3c', weight:3, opacity:0.9, dashArray:'7 6'}).addTo(hikeLayer);
-  const mid = h.pts[Math.floor(h.pts.length/2)];
-  L.marker(mid,{icon:makeIconSpecial('🥾','#b8611e')}).addTo(hikeLayer).bindPopup('<div class="pp"><h3>🥾 '+h.name+'</h3><p>'+h.info+'</p></div>');
-});
+function renderHikes(){
+  const g = document.getElementById('gHikes');
+  let html = '';
+  HIKES.forEach(h=>{
+    const pts = h.pts.map(p=>`${projX(p[1]).toFixed(1)},${projY(p[0]).toFixed(1)}`).join(' ');
+    html += `<polyline points="${pts}" fill="none" stroke="#e68a3c" stroke-width="2.2" opacity="0.85" stroke-dasharray="7 5"/>`;
+    const mid = h.pts[Math.floor(h.pts.length/2)];
+    const mx=projX(mid[1]), my=projY(mid[0]);
+    html += `<g class="hike-marker" data-name="${h.name}" data-info="${h.info}" style="cursor:pointer">
+      <circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="9" fill="#b8611e" stroke="#fff" stroke-width="1.5"/>
+      <text x="${mx.toFixed(1)}" y="${(my+3).toFixed(1)}" text-anchor="middle" font-size="9" fill="#fff">🥾</text>
+    </g>`;
+  });
+  g.innerHTML = html;
+  // 点击
+  g.querySelectorAll('.hike-marker').forEach(el=>{
+    el.onclick = ()=>{
+      const name = el.getAttribute('data-name');
+      const info = el.getAttribute('data-info');
+      document.getElementById('detailContent').innerHTML = 
+        `<h3 style="color:#e68a3c">🥾 ${name}</h3><div class="tag tg-hike">徒步路线</div><p class="desc">${info}</p>`;
+    };
+  });
+}
 
 // 骑行
-BIKES.forEach(b=>{
-  const line = L.polyline(b.pts,{color:'#b07ce6', weight:4, opacity:0.85}).addTo(bikeLayer);
-  const mid = b.pts[Math.floor(b.pts.length/2)];
-  L.marker(mid,{icon:makeIconSpecial('🚴','#5a2c8a')}).addTo(bikeLayer).bindPopup('<div class="pp"><h3>🚴 '+b.name+'</h3><p>'+b.info+'</p></div>');
-});
-
-// 4日行程动线渲染 - 每天一条粗线+序号标记+总览弹窗
-function renderDay(dayData, key){
-  const layer = dayLayers[key];
-  const c = dayData.color;
-  const pts = dayData.stops.map(s=>[s[2],s[3]]);
-  L.polyline(pts,{color:c, weight:5, opacity:0.9, dashArray:'1 0'}).addTo(layer);
-  dayData.stops.forEach((s,i)=>{
-    const isReturn = (i===dayData.stops.length-1);
-    const ic = L.divIcon({className:'', html:'<div style="width:28px;height:28px;border-radius:50%;background:'+c+';color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.5)">'+s[0]+'</div>', iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-14]});
-    const p = poiById[s[1]];
-    const name = p ? p.data.name : s[4];
-    L.marker([s[2],s[3]],{icon:ic}).addTo(layer).bindPopup('<div class="pp"><h3 style="color:'+c+'">'+key+' 第'+s[0]+'站 · '+name+'</h3><p>'+s[4]+'</p>'+(p?'<div class="meta">📍 景点: '+p.data.name+'</div>':'')+'</div>',{minWidth:240});
+function renderBikes(){
+  const g = document.getElementById('gBikes');
+  let html = '';
+  BIKES.forEach(b=>{
+    const pts = b.pts.map(p=>`${projX(p[1]).toFixed(1)},${projY(p[0]).toFixed(1)}`).join(' ');
+    html += `<polyline points="${pts}" fill="none" stroke="#b07ce6" stroke-width="3" opacity="0.8"/>`;
+    const mid = b.pts[Math.floor(b.pts.length/2)];
+    const mx=projX(mid[1]), my=projY(mid[0]);
+    html += `<g class="bike-marker" data-name="${b.name}" data-info="${b.info}" style="cursor:pointer">
+      <circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="9" fill="#5a2c8a" stroke="#fff" stroke-width="1.5"/>
+      <text x="${mx.toFixed(1)}" y="${(my+3).toFixed(1)}" text-anchor="middle" font-size="9" fill="#fff">🚴</text>
+    </g>`;
   });
-  // 中点总览弹窗(含行程+美食+住宿)
-  const midIdx = Math.floor(dayData.stops.length/2);
-  L.marker([dayData.stops[midIdx][2],dayData.stops[midIdx][3]],{icon:makeIconSpecial('📅',c)}).addTo(layer).bindPopup(
-    '<div class="pp" style="min-width:260px;max-width:300px">'+
-    '<h3 style="color:'+c+'">📅 '+dayData.name+'</h3>'+
-    '<p style="color:#cfe0f4">'+dayData.info+'</p>'+
-    '<div class="road" style="color:#ffd166;border-left:3px solid '+c+';padding-left:8px;margin:6px 0">🍽️ 推荐美食<br><span style="color:#cfe0f4;font-size:11.5px;white-space:pre-line">'+dayData.food+'</span></div>'+
-    '<div class="meta" style="color:#57c98b">🏨 住宿<br><span style="color:#cfe0f4;font-size:11.5px">'+dayData.stay+'</span></div>'+
-    '</div>',{minWidth:260, maxWidth:300});
+  g.innerHTML = html;
+  g.querySelectorAll('.bike-marker').forEach(el=>{
+    el.onclick = ()=>{
+      const name = el.getAttribute('data-name');
+      const info = el.getAttribute('data-info');
+      document.getElementById('detailContent').innerHTML = 
+        `<h3 style="color:#b07ce6">🚴 ${name}</h3><div class="tag tg-bike" style="background:#1e3a4a;color:#79c8e6">骑行路线</div><p class="desc">${info}</p>`;
+    };
+  });
 }
-DAYS.forEach((d,i)=>renderDay(d, 'D'+(i+1)));
+
+// 4日行程动线
+function renderDays(){
+  const g = document.getElementById('gDays');
+  let html = '';
+  DAYS.forEach((d,i)=>{
+    const key = 'D'+(i+1);
+    const c = d.color;
+    const pts = d.stops.map(s=>`${projX(s[3]).toFixed(1)},${projY(s[2]).toFixed(1)}`).join(' ');
+    html += `<polyline points="${pts}" fill="none" stroke="${c}" stroke-width="4" opacity="0.85" class="day-route" data-day="${key}"/>`;
+    // 序号圆
+    d.stops.forEach((s,si)=>{
+      const x=projX(s[3]), y=projY(s[2]);
+      const isReturn = (si===d.stops.length-1);
+      html += `<g class="day-stop" data-day="${key}" data-stop="${s[0]}" data-poi="${s[1]}" data-note="${s[4]}" style="cursor:pointer">
+        <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="13" fill="${c}" stroke="#fff" stroke-width="2"/>
+        <text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="middle" font-size="12" fill="#0b1220" font-weight="bold" pointer-events="none">${s[0]}</text>
+      </g>`;
+    });
+    // 中点 📅 总览
+    const midIdx = Math.floor(d.stops.length/2);
+    const mid = d.stops[midIdx];
+    const mx=projX(mid[3]), my=projY(mid[2]);
+    html += `<g class="day-info" data-day="${key}" style="cursor:pointer">
+      <circle cx="${mx.toFixed(1)}" cy="${(my-20).toFixed(1)}" r="12" fill="${c}" stroke="#fff" stroke-width="1.5"/>
+      <text x="${mx.toFixed(1)}" y="${(my-16).toFixed(1)}" text-anchor="middle" font-size="13">📅</text>
+      <text x="${mx.toFixed(1)}" y="${(my-34).toFixed(1)}" text-anchor="middle" font-size="9" fill="${c}" font-weight="bold">${key}</text>
+    </g>`;
+  });
+  g.innerHTML = html;
+  // 绑定序号点击
+  g.querySelectorAll('.day-stop').forEach(el=>{
+    el.onclick = ()=>{
+      const day = el.getAttribute('data-day');
+      const stop = el.getAttribute('data-stop');
+      const poiId = el.getAttribute('data-poi');
+      const note = el.getAttribute('data-note');
+      const d = DAYS[parseInt(day.slice(1))-1];
+      const p = poiById[poiId] ? poiById[poiId].data : null;
+      const name = p ? p.name : note;
+      document.getElementById('detailContent').innerHTML = 
+        `<h3 class="detail-title" style="color:${d.color}">${day} 第${stop}站 · ${name}</h3>
+         <div class="tag" style="background:${d.color};color:#0b1220">${day} 行程</div>
+         <p class="desc">${note}</p>
+         ${p ? `<div class="road"><b>📍 景点</b><br>${p.name}<br>海拔 ${p.alt}</div><div class="meta">${p.coord||('约 '+p.lng.toFixed(3)+'°E, '+p.lat.toFixed(3)+'°N')}</div>` : ''}`;
+    };
+  });
+  // 📅 点击
+  g.querySelectorAll('.day-info').forEach(el=>{
+    el.onclick = ()=>{
+      const day = el.getAttribute('data-day');
+      const d = DAYS[parseInt(day.slice(1))-1];
+      document.getElementById('detailContent').innerHTML = 
+        `<h3 class="detail-title" style="color:${d.color}">📅 ${d.name}</h3>
+         <p class="desc">${d.info}</p>
+         <div class="road" style="border-left:3px solid ${d.color}"><b style="color:${d.color}">🍽️ 推荐美食</b><br><span style="white-space:pre-line">${d.food}</span></div>
+         <div class="meta" style="color:#57c98b"><b>🏨 住宿</b><br>${d.stay}</div>`;
+    };
+  });
+}
+
+// 特产店
+function renderShops(){
+  const g = document.getElementById('gShops');
+  let html = '';
+  SHOPS.forEach(s=>{
+    const x=projX(s.lng), y=projY(s.lat);
+    html += `<g class="shop-marker" data-id="${s.id}" style="cursor:pointer">
+      <rect x="${(x-9).toFixed(1)}" y="${(y-9).toFixed(1)}" width="18" height="18" rx="3" fill="#19d3d3" stroke="#fff" stroke-width="1.5"/>
+      <text x="${x.toFixed(1)}" y="${(y+3).toFixed(1)}" text-anchor="middle" font-size="9" fill="#0b1220" font-weight="bold" pointer-events="none">kshop</text>
+      <text x="${x.toFixed(1)}" y="${(y-15).toFixed(1)}" text-anchor="middle" font-size="9.5" fill="#7fe6e6" font-weight="600" pointer-events="none" class="poi-label">${s.name.split('(')[0].slice(0,7)}</text>
+    </g>`;
+  });
+  g.innerHTML = html;
+  g.querySelectorAll('.shop-marker').forEach(el=>{
+    el.onclick = ()=>{ selectShop(el.getAttribute('data-id')); };
+  });
+}
+
+// 景点
+function renderPOIs(){
+  const g = document.getElementById('gPois');
+  let html = '';
+  POIs.forEach((p,idx)=>{
+    const x=projX(p.lng), y=projY(p.lat);
+    const c = catColor[p.cat];
+    const icon = catIcon[p.cat];
+    // 标签位置交错避免重叠
+    const labelOffsetY = (idx%2===0) ? -16 : 22;
+    html += `<g class="poi-marker" data-id="${p.id}" style="cursor:pointer">
+      <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="11" fill="${c}" stroke="#fff" stroke-width="1.5"/>
+      <text x="${x.toFixed(1)}" y="${(y+3).toFixed(1)}" text-anchor="middle" font-size="10" fill="#0b1220" font-weight="bold" pointer-events="none">${icon}</text>
+      <text x="${x.toFixed(1)}" y="${(y+labelOffsetY).toFixed(1)}" text-anchor="middle" font-size="10" fill="#cfe0f4" font-weight="600" pointer-events="none" class="poi-label">${p.name.split('(')[0].slice(0,8)}</text>
+    </g>`;
+  });
+  g.innerHTML = html;
+  g.querySelectorAll('.poi-marker').forEach(el=>{
+    el.onclick = ()=>{ selectPOI(el.getAttribute('data-id')); };
+  });
+}
+
+// 选中景点
+function selectPOI(id){
+  const p = poiById[id].data;
+  const tagCls = 'tg-'+p.cat;
+  const tagName = catTag[p.cat];
+  document.getElementById('detailContent').innerHTML = 
+    `<img class="detail-img" src="${p.img}"/>
+     <div class="detail-title">${p.name}</div>
+     <div><span class="tag ${tagCls}">${tagName}</span><span class="tag tg-hike">海拔 ${p.alt}</span></div>
+     <p class="desc">${p.desc}</p>
+     <div class="road"><b>🚗 路况/距离</b><br>${p.road}</div>
+     <div class="meta">📍 ${p.coord||('约 '+p.lng.toFixed(3)+'°E, '+p.lat.toFixed(3)+'°N  (估算)')}</div>`;
+  // 高亮当前标记
+  document.querySelectorAll('.poi-marker').forEach(el=>el.style.filter='none');
+  const cur = document.querySelector(`.poi-marker[data-id="${id}"]`);
+  if(cur) cur.style.filter='drop-shadow(0 0 8px #fff)';
+}
+
+// 选中特产店
+function selectShop(id){
+  const s = SHOPS.find(x=>x.id===id);
+  document.getElementById('detailContent').innerHTML = 
+    `<h3 class="detail-title" style="color:#7fe6e6">${s.name}</h3>
+     <div><span class="tag tg-shop">特产/非遗</span><span class="tag tg-hike">海拔 ${s.alt}</span></div>
+     <p class="desc">${s.desc}</p>
+     <div class="road"><b>kshop 主营</b><br>${s.goods}</div>
+     <div class="meta"><b>地址</b>: ${s.addr}<br>📍 ${s.coord||('约 '+s.lng.toFixed(3)+'°E, '+s.lat.toFixed(3)+'°N')}</div>`;
+}
 
 // 侧栏列表
-function renderList(){
-  const y=document.getElementById('listYushu'), n=document.getElementById('listNangqian');
-  y.innerHTML=''; n.innerHTML='';
+function renderLists(){
+  const y=document.getElementById('listYushu'), n=document.getElementById('listNangqian'), s=document.getElementById('listShop');
+  y.innerHTML=''; n.innerHTML=''; s.innerHTML='';
   POIs.forEach(p=>{
     const el=document.createElement('div'); el.className='poi';
-    el.innerHTML='<div class="dot c-'+p.cat+'"></div><img src="'+p.img+'"><div class="t"><b>'+p.name+'</b><br><span>'+p.alt+(p.region==='yushu'?' · 结古片区':' · 囊谦片区')+'</span></div>';
-    el.onclick=()=>{ map.flyTo([p.lat,p.lng],11); poiById[p.id].marker.openPopup(); };
+    el.innerHTML=`<div class="dot c-${p.cat}"></div><img src="${p.img}"><div class="t"><b>${p.name.split('(')[0]}</b><br><span>${p.alt}${p.region==='yushu'?' · 结古':' · 囊谦'}</span></div>`;
+    el.onclick=()=>{ selectPOI(p.id); };
     (p.region==='yushu'?y:n).appendChild(el);
   });
-}
-renderList();
-
-// 特产店铺列表
-function renderShopList(){
-  const c=document.getElementById('listShop'); c.innerHTML='';
-  SHOPS.forEach(s=>{
+  SHOPS.forEach(s2=>{
     const el=document.createElement('div'); el.className='poi';
-    el.innerHTML='<div class="dot c-shop"></div><div class="t"><b>'+s.name+'</b><br><span>'+(s.region==='yushu'?'结古':'囊谦')+' · '+(s.goods.split('、')[0])+'</span></div>';
-    el.onclick=()=>{ map.flyTo([s.lat,s.lng],13); shopById[s.id].marker.openPopup(); };
-    c.appendChild(el);
+    el.innerHTML=`<div class="dot c-shop"></div><div class="t"><b>${s2.name.slice(0,12)}</b><br><span>${s2.region==='yushu'?'结古':'囊谦'} · ${s2.goods.split('、')[0]}</span></div>`;
+    el.onclick=()=>{ selectShop(s2.id); };
+    s.appendChild(el);
   });
 }
-renderShopList();
 
 // 距离列表
 function renderDist(){
@@ -499,56 +679,59 @@ function renderDist(){
   ROADS.forEach(r=>{
     const A=poiById[r.a].data, B=poiById[r.b].data;
     const el=document.createElement('div'); el.className='rt';
-    el.innerHTML='<div class="a"><b>'+shortName(A.name)+'</b> ↔ <b>'+shortName(B.name)+'</b>'+(r.remote?'<small>⚠ 偏远→机场</small>':'<small>'+r.road+'</small>')+'</div><div class="d">'+r.dist+'</div><div class="t">'+r.time+'</div>';
-    el.onclick=()=>{ map.fitBounds([[A.lat,A.lng],[B.lat,B.lng]],{padding:[80,80]}); };
+    el.innerHTML=`<div class="a"><b>${shortName(A.name)}</b> ↔ <b>${shortName(B.name)}</b>${r.remote?'<small>⚠ 偏远→机场</small>':'<small>'+r.road+'</small>'}</div><div class="d">${r.dist}</div><div class="t">${r.time}</div>`;
     d.appendChild(el);
   });
 }
 function shortName(s){return s.replace('（','(').split('(')[0].replace('·','·').trim();}
-renderDist();
 
-// 全图范围
-function fitAll(){ map.fitBounds([[31.70,96.25],[33.10,97.30]],{padding:[20,80]}); }
-fitAll();
+// 图层显示/隐藏
+function setLayer(name, visible){
+  const map = {poi:'#gPois', shop:'#gShops', road:'#gRoads', hike:'#gHikes', bike:'#gBikes'};
+  const sel = map[name];
+  if(sel) document.querySelector(sel).style.display = visible?'inline':'none';
+}
+function setDay(day, visible){
+  document.querySelectorAll(`.day-route[data-day="D${day}"], .day-stop[data-day="D${day}"], .day-info[data-day="D${day}"]`).forEach(el=>{
+    el.style.display = visible?'inline':'none';
+  });
+}
 
 // 按钮交互
-function toggle(layer,btn){ if(map.hasLayer(layer)){map.removeLayer(layer);btn.classList.remove('active');} else {map.addLayer(layer);btn.classList.add('active');} }
-document.getElementById('tPoi').onclick=function(){toggle(poiLayer,this);};
-document.getElementById('tShop').onclick=function(){toggle(shopLayer,this);};
-document.getElementById('tRoad').onclick=function(){toggle(roadLayer,this);};
-document.getElementById('tHike').onclick=function(){toggle(hikeLayer,this);};
-document.getElementById('tBike').onclick=function(){toggle(bikeLayer,this);};
-document.getElementById('tDay1').onclick=function(){
-  toggle(dayLayers['D1'],this);
-  if(this.classList.contains('active')){
-    map.fitBounds([[32.80,97.00],[33.05,97.10]],{padding:[60,60]});
-  }
-};
-document.getElementById('tDay2').onclick=function(){
-  toggle(dayLayers['D2'],this);
-  if(this.classList.contains('active')){
-    map.fitBounds([[32.80,96.95],[33.10,97.30]],{padding:[60,60]});
-  }
-};
-document.getElementById('tDay3').onclick=function(){
-  toggle(dayLayers['D3'],this);
-  if(this.classList.contains('active')){
-    map.fitBounds([[32.05,96.40],[33.30,97.10]],{padding:[60,60]});
-  }
-};
-document.getElementById('tDay4').onclick=function(){
-  toggle(dayLayers['D4'],this);
-  if(this.classList.contains('active')){
-    map.fitBounds([[31.80,96.40],[33.05,97.10]],{padding:[60,60]});
-  }
-};
-document.getElementById('tFit').onclick=fitAll;
-document.getElementById('tSat').onclick=function(){
-  if(curBase==='sat'){ map.removeLayer(satLayer); map.removeLayer(refLayer);
-    // 切到浅色地形(用Esri terrain)
-    const t=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:17}); t.addTo(map); map._topo=t; curBase='topo'; this.textContent='地形图'; }
-  else { if(map._topo){map.removeLayer(map._topo);} satLayer.addTo(map); refLayer.addTo(map); curBase='sat'; this.textContent='卫星图'; }
-};
+document.querySelectorAll('.btn[data-layer]').forEach(btn=>{
+  btn.onclick = ()=>{
+    const layer = btn.getAttribute('data-layer');
+    if(layer==='all'){
+      // 全显/全隐切换
+      const allOn = [...document.querySelectorAll('.btn[data-layer]:not([data-layer="all"])')].every(b=>b.classList.contains('active'));
+      document.querySelectorAll('.btn[data-layer]:not([data-layer="all"])').forEach(b=>{
+        if(allOn){ b.classList.remove('active'); setLayer(b.getAttribute('data-layer'),false); }
+        else { b.classList.add('active'); setLayer(b.getAttribute('data-layer'),true); }
+      });
+    } else {
+      btn.classList.toggle('active');
+      setLayer(layer, btn.classList.contains('active'));
+    }
+  };
+});
+document.querySelectorAll('.btn[data-day]').forEach(btn=>{
+  btn.onclick = ()=>{
+    btn.classList.toggle('active');
+    setDay(btn.getAttribute('data-day'), btn.classList.contains('active'));
+  };
+});
+
+// 初始化渲染
+renderTerrain();
+renderRivers();
+renderRoads();
+renderHikes();
+renderBikes();
+renderDays();
+renderShops();
+renderPOIs();
+renderLists();
+renderDist();
 </script>
 </body>
 </html>
