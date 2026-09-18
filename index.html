@@ -95,6 +95,7 @@
     <span class="btn green active" id="tRoad">驾车路线</span>
     <span class="btn orange active" id="tHike">徒步</span>
     <span class="btn purple active" id="tBike">骑行</span>
+    <span class="btn" style="background:#ff2e63;color:#fff;border-color:#ff2e63" id="tDay2">D2环线</span>
     <span class="btn" id="tSat">卫星图</span>
     <span class="btn" id="tFit">全图</span>
   </div>
@@ -116,6 +117,7 @@
 </div>
 
 <div id="legend">
+  <div class="row"><span class="ln" style="background:#ff2e63"></span> D2结古环线(优化)</div>
   <div class="row"><span class="ln" style="background:#19d3d3"></span> 特产/非遗店铺</div>
   <div class="row"><span class="ln" style="background:#4ea0e6"></span> 驾车路线</div>
   <div class="row"><span class="ln" style="background:#e68a3c;border-top:2px dashed #e68a3c;background:transparent;height:0;border-bottom:3px dashed #e68a3c"></span> 徒步线路</div>
@@ -304,6 +306,23 @@ const BIKES = [
   {name:'环囊谦一日精品游', pts:[[32.230,96.480],[32.200,96.460],[32.100,96.550],[31.950,96.580],[32.230,96.480]], info:'官方精品线路四，约240km环线：朝释迦牟尼像—乃嘉玛神山—观澜沧江网状水系—尕尔寺听文成公主经轮。'},
 ];
 
+// ============ D2 结古环线行程(优化版) ============
+// 原路线 结古→文成→勒巴→禅古→通天 在勒巴→禅古段折返，优化为顺时针环线不折返。
+const DAY2 = {
+  name:'D2 结古周边环线(优化版)',
+  color:'#ff2e63',
+  // [序号, 景点id, 纬度, 经度, 停留说明]
+  stops:[
+    [1,'jiegutown',33.009,97.016,'结古镇出发'],
+    [2,'changu',32.970,97.020,'禅古寺(结古南4km)'],
+    [3,'wencheng',32.840,97.050,'文成公主庙(继续南16km)'],
+    [4,'leba',32.900,97.100,'勒巴沟岩画徒步(附近)'],
+    [5,'tongtian',33.050,97.250,'通天河·三江源碑(东行)'],
+    [6,'jiegutown',33.009,97.016,'返回结古镇'],
+  ],
+  info:'顺时针环线：结古→禅古寺→文成公主庙→勒巴沟→通天河→结古，避免折返，约90km。'
+};
+
 // ============ 渲染 ============
 const map = L.map('map',{zoomControl:true, attributionControl:false}).setView([32.4,96.9],8);
 let curBase = 'sat';
@@ -331,6 +350,7 @@ const shopLayer = L.layerGroup().addTo(map);
 const roadLayer = L.layerGroup().addTo(map);
 const hikeLayer = L.layerGroup().addTo(map);
 const bikeLayer = L.layerGroup().addTo(map);
+const day2Layer = L.layerGroup().addTo(map);
 
 const poiById = {};
 POIs.forEach(p=>{
@@ -370,6 +390,23 @@ BIKES.forEach(b=>{
   const mid = b.pts[Math.floor(b.pts.length/2)];
   L.marker(mid,{icon:makeIconSpecial('🚴','#5a2c8a')}).addTo(bikeLayer).bindPopup('<div class="pp"><h3>🚴 '+b.name+'</h3><p>'+b.info+'</p></div>');
 });
+
+// D2 结古环线(优化版)- 粉红色粗线+序号标记
+(function(){
+  const c = DAY2.color;
+  const pts = DAY2.stops.map(s=>[s[2],s[3]]);
+  L.polyline(pts,{color:c, weight:5, opacity:0.9, dashArray:'1 0'}).addTo(day2Layer);
+  DAY2.stops.forEach((s,i)=>{
+    const isReturn = (i===DAY2.stops.length-1);
+    const ic = L.divIcon({className:'', html:'<div style="width:28px;height:28px;border-radius:50%;background:'+c+';color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.5)">'+s[0]+'</div>', iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-14]});
+    const p = poiById[s[1]];
+    const name = p ? p.data.name : s[4];
+    L.marker([s[2],s[3]],{icon:ic}).addTo(day2Layer).bindPopup('<div class="pp"><h3 style="color:'+c+'">D2 第'+s[0]+'站 · '+name+'</h3><p>'+s[4]+'</p></div>');
+  });
+  // 中线说明
+  const midIdx = Math.floor(DAY2.stops.length/2);
+  L.marker([DAY2.stops[midIdx][2],DAY2.stops[midIdx][3]],{icon:makeIconSpecial('📅',c)}).addTo(day2Layer).bindPopup('<div class="pp"><h3 style="color:'+c+'">'+DAY2.name+'</h3><p>'+DAY2.info+'</p></div>');
+})();
 
 // 侧栏列表
 function renderList(){
@@ -421,6 +458,12 @@ document.getElementById('tShop').onclick=function(){toggle(shopLayer,this);};
 document.getElementById('tRoad').onclick=function(){toggle(roadLayer,this);};
 document.getElementById('tHike').onclick=function(){toggle(hikeLayer,this);};
 document.getElementById('tBike').onclick=function(){toggle(bikeLayer,this);};
+document.getElementById('tDay2').onclick=function(){
+  toggle(day2Layer,this);
+  if(this.classList.contains('active')){
+    map.fitBounds([[32.80,96.95],[33.10,97.30]],{padding:[60,60]});
+  }
+};
 document.getElementById('tFit').onclick=fitAll;
 document.getElementById('tSat').onclick=function(){
   if(curBase==='sat'){ map.removeLayer(satLayer); map.removeLayer(refLayer);
